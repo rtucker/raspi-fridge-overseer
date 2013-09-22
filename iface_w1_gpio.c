@@ -1,20 +1,8 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <ctype.h>
 #include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "iface_w1_gpio.h"
-#include "overseer.h"
-
-#define DEVICE_PATH         "/sys/bus/w1/drivers/w1_master_driver/w1_bus_master1"
-#define DEVICE_READ_PATH    DEVICE_PATH "/%s/w1_slave"
 
 // convertTemperature: converts a hex value from the 1-wire sensor into
 // degrees C
@@ -89,15 +77,19 @@ size_t getSensorList(sensor_t *sensor_array)
     dirp = opendir(DEVICE_PATH);
     while ((dp = readdir(dirp)) != NULL)
     {
-        if ((dp->d_type == DT_DIR) && !(strncmp(dp->d_name, ".", 1) == 0) && readSensor(&read_value, dp->d_name))
+        // detect if we've found a directory that is really a sensor
+        if ((dp->d_type == DT_DIR) &&
+            !(strncmp(dp->d_name, ".", 1) == 0) &&
+            readSensor(&read_value, dp->d_name))
         {
             sensor_array[index].filename = dp->d_name;
-            sensor_array[index].reading = read_value;
+            sensor_array[index].reading  = read_value;
             index++;
         }
 
         if (index > SENSOR_ARRAY_LENGTH) break;
     }
+
     (void)closedir(dirp);
 
     return index;
