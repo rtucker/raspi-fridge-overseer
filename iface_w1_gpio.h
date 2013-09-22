@@ -8,6 +8,7 @@
 #define DEVICE_READ_PATH        DEVICE_PATH "/%s/w1_slave"
 
 // per the datasheet
+// http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Sensors/Temp/DS18B20.pdf
 #define TEMPERATURE_MULTIPLER   0.0625
 
 // prototypes

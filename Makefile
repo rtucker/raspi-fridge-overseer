@@ -3,7 +3,7 @@
 CC=gcc
 CFLAGS=-c -Wall
 LDFLAGS=
-SOURCES=iface_w1_gpio.c overseer.c
+SOURCES=iface_lcd.c iface_uart.c iface_w1_gpio.c overseer.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=overseer
 RM=rm -f
