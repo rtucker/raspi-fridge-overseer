@@ -6,4 +6,14 @@
 
 void lcdWrite(char *txbuf);
 void lcdClear();
+void lcdMoveLeft();
+void lcdMoveRight();
+void lcdScrollLeft();
+void lcdScrollRight();
+void lcdVisualDisplayOn();
+void lcdVisualDisplayOff();
+void lcdUnderlineCursorOn();
+void lcdUnderlineCursorOff();
+void lcdBoxCursorOn();
+void lcdBoxCursorOff();
 #endif

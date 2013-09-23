@@ -14,7 +14,6 @@ void lcdWrite(char *txbuf)
     {
         if (0 == (char)*(txbuf + i))
         {
-            printf("lcdWrite: found null\n");
             space_out = TRUE;
         }
 
@@ -33,7 +32,58 @@ void lcdWrite(char *txbuf)
     uartTx(newbuf, LCD_WIDTH);
 }
 
+// Quick hits for LCD commands
 void lcdClear()
 {
     uartTx("\xFE\x01", 2);
+}
+
+void lcdMoveLeft() 
+{
+    uartTx("\xFE\x10", 2);
+}
+
+void lcdMoveRight() 
+{
+    uartTx("\xFE\x14", 2);
+}
+
+void lcdScrollLeft() 
+{
+    uartTx("\xFE\x18", 2);
+}
+
+void lcdScrollRight() 
+{
+    uartTx("\xFE\x1C", 2);
+}
+
+void lcdVisualDisplayOn() 
+{
+    uartTx("\xFE\x0C", 2);
+}
+
+void lcdVisualDisplayOff() 
+{
+    uartTx("\xFE\x08", 2);
+}
+
+void lcdUnderlineCursorOn() 
+{
+    uartTx("\xFE\x0E", 2);
+}
+
+void lcdUnderlineCursorOff() 
+{
+    uartTx("\xFE\x0C", 2);
+}
+
+void lcdBoxCursorOn() 
+{
+    uartTx("\xFE\x0D", 2);
+}
+
+void lcdBoxCursorOff() 
+{
+    uartTx("\xFE\x0C", 2);
 }

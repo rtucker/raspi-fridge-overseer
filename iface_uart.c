@@ -74,7 +74,6 @@ char uartTx(char *txbuf, size_t len)
         fprintf(stderr, "uartTx: uart tx error\n");
     }
 
-    fprintf(stdout, "uartTx: len=%d tx_len=%d txbuf=\"%s\"\n", len, tx_len, txbuf);
     return TRUE;
 }
 

@@ -23,7 +23,7 @@ int main()
     {
         printf("Sensor %d (%s) = %g degrees C\n",
                i, sensor_array[i].filename, sensor_array[i].reading);
-        snprintf(outbuf, 16, "s%d = %g", i, sensor_array[i].reading);
+        snprintf(outbuf, 16, "s%d = %3.1f", i, sensor_array[i].reading);
         lcdWrite(outbuf);
     }
     return 0;
