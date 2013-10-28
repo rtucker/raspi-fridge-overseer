@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Crappy munin plugin.
+
+if [ "$1" == "config" ];
+then
+    echo "graph_title Kitchen refrigerator temperatures"
+    echo "graph_vlabel degrees C"
+    echo "graph_category Sensors"
+    echo "graph_args --alt-autoscale"
+    echo "sensor_28-00000521e2ea.label Freezer"
+    echo "sensor_28-00000521fbf8.label Refrigerator"
+else
+    cat /dev/shm/overseer_reading
+fi
+
