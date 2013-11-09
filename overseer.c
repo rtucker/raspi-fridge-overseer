@@ -42,12 +42,12 @@ int main()
     lcdWrite(outbuf);
 
     // Output two temperatures to the display
-    if((int)actualsize > 1)
+    if ((int)actualsize > 1)
     {
         snprintf(outbuf, 16, "0=%3.1f 1=%3.1f",
                  sensor_array[0].reading, sensor_array[1].reading);
     }
-    else if((int)actualsize > 0)
+    else if ((int)actualsize > 0)
     {
         snprintf(outbuf, 16, "Temp: %3.1f", sensor_array[0].reading);
     }
@@ -56,6 +56,9 @@ int main()
         snprintf(outbuf, 16, "NO DATA");
     }
     lcdWrite(outbuf);
+
+    // Close display
+    uartClose();
 
     return 0;
 }

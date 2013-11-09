@@ -67,6 +67,10 @@ char uartTx(char *txbuf, size_t len)
         return FALSE;
     }
 
+    #ifdef DEBUG
+    fprintf(stderr, "uartTx: DEBUG: %s\n", txbuf);
+    #endif
+
     int tx_len = write(uart0_filestream, txbuf, len);
 
     if (tx_len < 0)
@@ -95,6 +99,10 @@ size_t uartRx(char *rxbuf, size_t maxlen)
     else
     {
         // zero or more bytes.  null-terminate and send back
+        #ifdef DEBUG
+        fprintf(stderr, "uartRx: DEBUG: %s\n", rxbuf);
+        #endif
+
         rxbuf[rx_len] = '\0';
         return rx_len;
     }
