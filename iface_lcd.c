@@ -87,3 +87,33 @@ void lcdBoxCursorOff()
 {
     uartTx("\xFE\x0C", 2);
 }
+
+void lcdSetBrightness(char level)
+{
+    // Sets a backlight brightness level between 0 and 255
+    // 
+    // We send 0x7C then a number between 128 and 157, which
+    // we'll translate the 8-bit value into.
+
+    char uartOut[3];
+    char pwmValue;
+    
+    pwmValue = (level / 8) + 128;
+
+    if (pwmValue > 157)
+    {
+        // Maximum value is FULLY ON (157)
+        pwmValue = 157;
+    }
+    if (pwmValue < 128)
+    {
+        // Minimum value is OFF (128)
+        pwmValue = 128;
+    }
+
+    uartOut[0] = 0x7C;
+    uartOut[1] = pwmValue;
+    uartOut[2] = 0;
+
+    uartTx(uartOut, 2);
+}

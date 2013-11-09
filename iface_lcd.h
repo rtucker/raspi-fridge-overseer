@@ -16,4 +16,5 @@ void lcdUnderlineCursorOn();
 void lcdUnderlineCursorOff();
 void lcdBoxCursorOn();
 void lcdBoxCursorOff();
+void lcdSetBrightness(char level);
 #endif

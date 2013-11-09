@@ -3,21 +3,31 @@
 CC=gcc
 CFLAGS=-c -Wall
 LDFLAGS=
-SOURCES=iface_lcd.c iface_uart.c iface_w1_gpio.c overseer.c
-OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=overseer
 RM=rm -f
 
-all: $(SOURCES) $(EXECUTABLE)
+OVERSEER_SOURCES=iface_lcd.c iface_uart.c iface_w1_gpio.c overseer.c
+OVERSEER_OBJECTS=$(OVERSEER_SOURCES:.c=.o)
+SET_BACKLIGHT_SOURCES=iface_lcd.c iface_uart.c set_backlight.c
+SET_BACKLIGHT_OBJECTS=$(SET_BACKLIGHT_SOURCES:.c=.o)
+
+all: overseer set_backlight
     
-$(EXECUTABLE): $(OBJECTS) 
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+overseer: $(OVERSEER_OBJECTS) 
+	$(CC) $(LDFLAGS) $(OVERSEER_OBJECTS) -o $@
+
+set_backlight: $(SET_BACKLIGHT_OBJECTS) 
+	$(CC) $(LDFLAGS) $(SET_BACKLIGHT_OBJECTS) -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
 
-clean: clean_test
-	$(RM) $(OBJECTS) $(EXECUTABLE)
+clean: clean_test clean_overseer clean_set_backlight
+
+clean_overseer:
+	$(RM) $(OVERSEER_OBJECTS) overseer
+
+clean_set_backlight:
+	$(RM) $(SET_BACKLIGHT_OBJECTS) set_backlight
 
 test: test_w1_gpio clean_test
 clean_test: clean_test_w1_gpio
