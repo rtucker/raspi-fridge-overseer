@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 
@@ -61,7 +62,17 @@ char readSensor(float *reading, char *deviceId)
         *reading = convertTemperature(hexout[1], hexout[0]);
     }
 
+    fclose(fp);
+
     return result;
+}
+
+// float comparison for qsort
+int float_cmp(void const *a, void const *b)
+{
+    int const *ia = (int const *)a;
+    int const *ib = (int const *)b;
+    return *ia - *ib;
 }
 
 // getSensorList: populates a list of all sensors we believe exist, along
@@ -69,10 +80,12 @@ char readSensor(float *reading, char *deviceId)
 size_t getSensorList(sensor_t *sensor_array)
 {
     size_t index = 0;
+    int i = 0;
+    int tries = 0;
 
     DIR *dirp;
     struct dirent *dp;
-    float read_value;
+    float read_value[5];
 
     dirp = opendir(DEVICE_PATH);
     while ((dp = readdir(dirp)) != NULL)
@@ -80,10 +93,21 @@ size_t getSensorList(sensor_t *sensor_array)
         // detect if we've found a directory that is really a sensor
         if ((dp->d_type == DT_DIR) &&
             !(strncmp(dp->d_name, ".", 1) == 0) &&
-            readSensor(&read_value, dp->d_name))
+            readSensor(&read_value[0], dp->d_name))
         {
+            // read it four more times
+            for (i = 0; i < 4; ++i) {
+                tries = 0;
+                while (!readSensor(&read_value[i+1], dp->d_name)) {
+                    if (++tries > 10) return index;     // all is wrong!
+                }
+            }
+
+            // sort to get the median value
+            qsort(read_value, 5, sizeof(float), float_cmp);
+
             sensor_array[index].filename = dp->d_name;
-            sensor_array[index].reading  = read_value;
+            sensor_array[index].reading  = read_value[2];
             index++;
         }
 
