@@ -10,12 +10,22 @@
 
 int main()
 {
-    sensor_t *sensor_array = malloc(SENSOR_ARRAY_LENGTH * sizeof(*sensor_array));
-    size_t actualsize      = getSensorList(sensor_array);
+    sensor_t *sensor_array;
+    size_t actualsize;
     char outbuf[16];
     int i = 0;
     time_t t;
     struct tm *tmp;
+
+    // Pull in sensor data
+    sensor_array = malloc(SENSOR_ARRAY_LENGTH * sizeof(*sensor_array));
+    if (sensor_array == NULL)
+    {
+        // woah nelly
+        printf("# malloc of sensor_array failed!\n");
+        return 1;
+    }
+    actualsize = getSensorList(sensor_array);
 
     // Initialize the display
     (void)uartInit();
@@ -56,6 +66,8 @@ int main()
         snprintf(outbuf, 16, "NO DATA");
     }
     lcdWrite(outbuf);
+
+    free(sensor_array);
 
     // Close display
     uartClose();
