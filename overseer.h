@@ -7,6 +7,7 @@
 #endif
 
 #define SENSOR_ARRAY_LENGTH 16
+#define DISPLAY_WIDTH 16
 
 struct sensor_s
 {
