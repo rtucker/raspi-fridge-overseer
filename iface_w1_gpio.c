@@ -85,7 +85,7 @@ size_t getSensorList(sensor_t *sensor_array)
 
     DIR *dirp;
     struct dirent *dp;
-    float read_value[5];
+    float read_value[TEMPERATURE_AVERAGES];
 
     dirp = opendir(DEVICE_PATH);
     while ((dp = readdir(dirp)) != NULL)
@@ -96,7 +96,7 @@ size_t getSensorList(sensor_t *sensor_array)
             readSensor(&read_value[0], dp->d_name))
         {
             // read it four more times
-            for (i = 0; i < 4; ++i) {
+            for (i = 0; i < (TEMPERATURE_AVERAGES-1); ++i) {
                 tries = 0;
                 while (!readSensor(&read_value[i+1], dp->d_name)) {
                     if (++tries > 10) return index;     // all is wrong!
@@ -104,11 +104,12 @@ size_t getSensorList(sensor_t *sensor_array)
             }
 
             // sort to get the median value
-            qsort(read_value, 5, sizeof(float), float_cmp);
+            qsort(read_value, TEMPERATURE_AVERAGES, sizeof(float), float_cmp);
 
-            sensor_array[index].filename = dp->d_name;
+            strncpy(sensor_array[index].filename, dp->d_name, NAME_MAX+1);
+            //sensor_array[index].filename = dp->d_name;
             sensor_array[index].reading  = read_value[2];
-            index++;
+            ++index;
         }
 
         if (index > SENSOR_ARRAY_LENGTH) break;

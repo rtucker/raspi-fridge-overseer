@@ -17,6 +17,17 @@ int main()
     time_t t;
     struct tm *tmp;
 
+    // Pull in sensor data
+    sensor_array = malloc(SENSOR_ARRAY_LENGTH * sizeof(sensor_t));
+
+    if (sensor_array == NULL)
+    {
+        // woah nelly
+        printf("# malloc of sensor_array failed!\n");
+        return 1;
+    }
+    actualsize = getSensorList(sensor_array);
+
     // Initialize the display
     (void)uartInit();
     lcdClear();
@@ -34,19 +45,8 @@ int main()
     }
     lcdWrite(outbuf);
 
-    // Pull in sensor data
-    sensor_array = malloc(SENSOR_ARRAY_LENGTH * sizeof(*sensor_array));
-    if (sensor_array == NULL)
-    {
-        // woah nelly
-        printf("# malloc of sensor_array failed!\n");
-        snprintf(outbuf, DISPLAY_WIDTH+1, "SYSTEM ERROR");
-        return 1;
-    }
-    actualsize = getSensorList(sensor_array);
-
     // Produce a hunk of output for munin
-    for (i = 0; i < (int)actualsize; i++)
+    for (i = 0; i < (int)actualsize; ++i)
     {
         printf("sensor_%s.value %g\n",
                sensor_array[i].filename, sensor_array[i].reading);

@@ -1,6 +1,8 @@
 #ifndef __INCLUDE_OVERSEER_H_
 #define __INCLUDE_OVERSEER_H_
 
+#include <dirent.h>
+
 #ifndef TRUE
 #  define       TRUE    (1==1)
 #  define       FALSE   (1==2)
@@ -11,7 +13,7 @@
 
 struct sensor_s
 {
-    char *filename;
+    char  filename[NAME_MAX+1];
     float reading;
 };
 

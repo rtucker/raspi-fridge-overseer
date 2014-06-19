@@ -11,6 +11,8 @@
 // http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Sensors/Temp/DS18B20.pdf
 #define TEMPERATURE_MULTIPLER   0.0625
 
+#define TEMPERATURE_AVERAGES  5
+
 // prototypes
 float convertTemperature(char msb, char lsb);
 char readSensor(float *reading, char *deviceId);
