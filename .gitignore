@@ -17,3 +17,11 @@
 *.app
 overseer
 set_backlight
+
+# Python
+*.pyc
+*.pyo
+forecastio/
+
+# Configuration
+.secrets
