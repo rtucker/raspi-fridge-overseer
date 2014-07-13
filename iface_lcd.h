@@ -4,7 +4,8 @@
 #define LCD_WIDTH 16
 #define LCD_HEIGHT 2
 
-void lcdWrite(char *txbuf);
+void lcdWrite(char const *txbuf);
+void lcdWriteWide(char const *txbuf, size_t len, char line);
 void lcdClear();
 void lcdMoveLeft();
 void lcdMoveRight();
@@ -17,4 +18,5 @@ void lcdUnderlineCursorOff();
 void lcdBoxCursorOn();
 void lcdBoxCursorOff();
 void lcdSetBrightness(char level);
+void lcdSetPosition(char line, char column);
 #endif

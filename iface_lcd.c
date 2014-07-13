@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "overseer.h"
 #include "iface_lcd.h"
 #include "iface_uart.h"
+#include "time.h"
 
-void lcdWrite(char *txbuf)
+void lcdWrite(char const *txbuf)
 {
     int i;
     char newbuf[LCD_WIDTH + 1];
@@ -30,6 +33,51 @@ void lcdWrite(char *txbuf)
     newbuf[LCD_WIDTH] = 0;
 
     uartTx(newbuf, LCD_WIDTH);
+}
+
+void lcdWriteWide(char const *txbuf, size_t len, char line)
+{
+    size_t idx;
+    char *newbuf;
+    struct timespec tim = {0, 0.4e9};
+
+    fprintf(stdout, "Initial len: %d\n", len);
+
+    if (len < LCD_WIDTH)
+    {
+        // might as well use the old function if it's this short
+        lcdWrite(txbuf);
+        return;
+    }
+    else
+    {
+        // for a clean scroll-in effect
+        len += LCD_WIDTH;
+    }
+
+    newbuf = malloc(len * sizeof(char));
+
+    if (newbuf == NULL)
+    {
+        // oh no
+        return;
+    }
+
+    fprintf(stdout, "New len: %d\n", len);
+
+    memset(newbuf, ' ', len);
+    memcpy((newbuf+LCD_WIDTH), txbuf, len-LCD_WIDTH);
+
+    // Send this out...
+    for (idx = 0; idx <= len-LCD_WIDTH; ++idx)
+    {
+        lcdSetPosition(line, 0);
+        lcdWrite(newbuf+idx);
+        //fprintf(stdout, "Displaying: [%.16s] at %d..%d\n", newbuf+idx, idx, idx+15);
+        nanosleep(&tim, NULL);
+    }
+
+    free(newbuf);
 }
 
 // Quick hits for LCD commands
@@ -113,6 +161,39 @@ void lcdSetBrightness(char level)
 
     uartOut[0] = 0x7C;
     uartOut[1] = pwmValue;
+    uartOut[2] = 0;
+
+    uartTx(uartOut, 2);
+}
+
+void lcdSetPosition(char line, char column)
+{
+    // Expects zero-indexed column and one-indexed line.
+    // (Like the docs...)
+
+    char uartOut[3];
+    char position = 0x80;
+
+    switch (line)
+    {
+        case 1:
+            position += 0;
+            break;
+        case 2:
+            position += 64;
+            break;
+        case 3:
+            position += LCD_WIDTH;
+            break;
+        case 4:
+            position += LCD_WIDTH + 64;
+            break;
+    }
+
+    position += column;
+
+    uartOut[0] = 0xFE;
+    uartOut[1] = position;
     uartOut[2] = 0;
 
     uartTx(uartOut, 2);

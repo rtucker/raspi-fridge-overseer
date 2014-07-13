@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
 PICKLEFILE = '/dev/shm/iface_forecastio.p'
+NOWFILE = '/dev/shm/iface_forecastio.now.txt'
+LATERFILE = '/dev/shm/iface_forecastio.later.txt'
 
 import forecastio
+import os
 import pickle
+import sys
 import time
 
 def read_config(filename=".secrets"):
@@ -13,6 +17,10 @@ def read_config(filename=".secrets"):
     #   latitude
     #   longitude
     # Returns these three values as a tuple...
+
+    if os.path.dirname(filename) == '':
+        base = os.path.dirname(sys.argv[0])
+        filename = os.path.join(base, filename)
 
     with open(filename, 'r') as fp:
         api_key = fp.readline().strip()
@@ -60,18 +68,53 @@ def get_extreme_temperatures(data):
 
     return (t_min, t_max)
 
-def main():
+def main(test=False):
     forecast = get_cache()
 
     if forecast is None:
         forecast = forecastio.load_forecast(*read_config(), units="si")
-        set_cache(forecast)
-
-    print("Cur: %s, %d degC" % (forecast.currently().summary, round(forecast.currently().temperature)))
+        if test:
+            print("*** Cache miss")
+        else:
+            set_cache(forecast)
 
     low, high = get_extreme_temperatures(forecast.hourly().data)
 
-    print("Today: %s (High %d, Low %d)" % (forecast.hourly().summary, round(high), round(low)))
+    nowtxt = "Now: %d, dwpt %d. %s" % (
+                    round(forecast.currently().temperature),
+                    round(forecast.currently().dewPoint),
+                    forecast.minutely().summary
+                )
+    if len(forecast.alerts()) > 0:
+        latertxt = "***ALERT*** %s ***ALERT***" % forecast.alerts().title
+    else:
+        latertxt = "Later: %s High %d, Low %d." % (
+                        forecast.hourly().summary,
+                        round(high),
+                        round(low)
+                    )
 
-if __name__ == '__main__': main()
+    if test:
+        print("Expires: %s" % forecast.http_headers.get('Expires', None))
+        print(nowtxt)
+        print(latertxt)
+
+        for a in forecast.alerts():
+            print("*****************")
+            print("Alert title      : %s" % (a.title))
+            print("      expires    : %s" % (a.expires))
+            print("      description: %s" % (a.description))
+            print("      uri        : %s" % (a.uri))
+
+    else:
+        with open(NOWFILE, 'w') as fp:
+            fp.write(nowtxt)
+        with open(LATERFILE, 'w') as fp:
+            fp.write(latertxt)
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'test':
+        main(test=True)
+    else:
+        main()
 
