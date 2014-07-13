@@ -2,8 +2,8 @@
 
 ### BEGIN INIT INFO
 # Provides:             overseer
-# Required-Start:       $syslog $remote_fs $networking
-# Required-Stop:        $syslog $remote_fs $networking
+# Required-Start:       $syslog $remote_fs $network $ntp
+# Required-Stop:        $syslog $remote_fs $network
 # Should-Start:         $local_fs
 # Should-Stop:          $local_fs
 # Default-Start:        2 3 4 5
@@ -14,6 +14,8 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 TZ=America/New_York
+
+export TZ
 
 . /lib/lsb/init-functions
 
