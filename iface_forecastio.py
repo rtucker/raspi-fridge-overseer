@@ -4,9 +4,13 @@ PICKLEFILE = '/dev/shm/iface_forecastio.p'
 NOWFILE = '/dev/shm/iface_forecastio.now.txt'
 LATERFILE = '/dev/shm/iface_forecastio.later.txt'
 
+import codecs
+from datetime import datetime, timedelta
 import forecastio
+import locale
 import os
 import pickle
+import random
 import sys
 import time
 
@@ -35,7 +39,7 @@ def parse_expires(value):
 
     return time.strptime(value, "%a, %d %b %Y %H:%M:%S +0000")
 
-def get_cache():
+def get_cache(allow_old=False):
     try:
         forecast = pickle.load(open(PICKLEFILE, 'rb'))
         expires = forecast.http_headers.get('Expires', None)
@@ -47,11 +51,11 @@ def get_cache():
     else:
         return None
 
-    if checktime > time.gmtime():
+    if allow_old or checktime > time.gmtime():
         # Still valid
         return forecast
     else:
-        # Still valid
+        # Expired
         return None
 
 def set_cache(forecast):
@@ -69,47 +73,74 @@ def get_extreme_temperatures(data):
     return (t_min, t_max)
 
 def main(test=False):
-    forecast = get_cache()
+    forecast = get_cache(allow_old=True if test else False)
 
     if forecast is None:
+        if not test:
+            # Random sleep to avoid stampeding
+            time.sleep(random.random()*30)
+
         forecast = forecastio.load_forecast(*read_config(), units="si")
-        if test:
-            print("*** Cache miss")
-        else:
+
+        if not test:
             set_cache(forecast)
 
     low, high = get_extreme_temperatures(forecast.hourly().data)
 
-    nowtxt = "Now: %d, dwpt %d. %s" % (
+    # \xdf = degree symbol
+    nowtxt = u"%s %d\xdf" % (
+                    forecast.minutely().summary,
                     round(forecast.currently().temperature),
-                    round(forecast.currently().dewPoint),
-                    forecast.minutely().summary
                 )
+
+    if round(forecast.currently().temperature) != round(forecast.currently().apparentTemperature):
+        nowtxt += u", feels like %d\xdf" % round(forecast.currently().apparentTemperature)
+
     if len(forecast.alerts()) > 0:
-        latertxt = "***ALERT*** %s ***ALERT***" % forecast.alerts().title
+        latertxt = u"***ALERT*** %s ***ALERT***" % forecast.alerts().title
     else:
-        latertxt = "Later: %s High %d, Low %d." % (
+        latertxt = u"Next 24h: %s High %d\xdf Low %d\xdf" % (
                         forecast.hourly().summary,
                         round(high),
-                        round(low)
+                        round(low),
                     )
 
+    precip_types = []
+    integ_precip = 0
+    for d in forecast.hourly().data:
+        if d.time > datetime.now() + timedelta(days=1):
+            continue
+        integ_precip += d.precipProbability * d.precipIntensity
+        try:
+            if d.precipType not in precip_types:
+                precip_types.append(d.precipType)
+        except forecastio.utils.PropertyUnavailable:
+            pass
+
+    if integ_precip > 0:
+        latertxt += u" H2O(l): %.2g mm as %s." % (integ_precip, ', '.join(precip_types))
+
     if test:
-        print("Expires: %s" % forecast.http_headers.get('Expires', None))
+        print(u"Retrieved: %s" % forecast.http_headers.get('Date', None))
+        print(u"Expires:   %s" % forecast.http_headers.get('Expires', None))
         print(nowtxt)
         print(latertxt)
 
         for a in forecast.alerts():
-            print("*****************")
-            print("Alert title      : %s" % (a.title))
-            print("      expires    : %s" % (a.expires))
-            print("      description: %s" % (a.description))
-            print("      uri        : %s" % (a.uri))
+            print(u"*****************")
+            print(u"Alert title      : %s" % (a.title))
+            print(u"      expires    : %s" % (a.expires))
+            print(u"      description: %s" % (a.description))
+            print(u"      uri        : %s" % (a.uri))
 
     else:
-        with open(NOWFILE, 'w') as fp:
-            fp.write(nowtxt)
-        with open(LATERFILE, 'w') as fp:
+        with open(NOWFILE, 'wb') as fp:
+            # force latin_1 instead of ascii, so we can directly use chars
+            # above 128 without unicode crap
+            fp = codecs.getwriter('latin_1')(fp)
+            fp.write(unicode(nowtxt))
+        with open(LATERFILE, 'wb') as fp:
+            fp = codecs.getwriter('latin_1')(fp)
             fp.write(latertxt)
 
 if __name__ == '__main__':
