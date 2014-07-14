@@ -41,8 +41,6 @@ void lcdWriteWide(char const *txbuf, size_t len, char line)
     char *newbuf;
     struct timespec tim = {0, 0.4e9};
 
-    fprintf(stdout, "Initial len: %d\n", len);
-
     if (len < LCD_WIDTH)
     {
         // might as well use the old function if it's this short
@@ -62,8 +60,6 @@ void lcdWriteWide(char const *txbuf, size_t len, char line)
         // oh no
         return;
     }
-
-    fprintf(stdout, "New len: %d\n", len);
 
     memset(newbuf, ' ', len);
     memcpy((newbuf+LCD_WIDTH), txbuf, len-LCD_WIDTH);
