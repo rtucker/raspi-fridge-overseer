@@ -43,7 +43,7 @@ def get_cache(allow_old=False):
     try:
         forecast = pickle.load(open(PICKLEFILE, 'rb'))
         expires = forecast.http_headers.get('Expires', None)
-    except IOError:
+    except IOError, RuntimeError:
         return None
 
     if expires is not None:
@@ -97,7 +97,7 @@ def main(test=False):
         nowtxt += u", feels like %d\xdf" % round(forecast.currently().apparentTemperature)
 
     if len(forecast.alerts()) > 0:
-        latertxt = u"***ALERT*** %s ***ALERT***" % forecast.alerts().title
+        latertxt = u"***ALERT*** %s ***ALERT***" % '; '.join([f.title for f in forecast.alerts()])
     else:
         latertxt = u"Next 24h: %s High %d\xdf Low %d\xdf" % (
                         forecast.hourly().summary,
@@ -105,20 +105,20 @@ def main(test=False):
                         round(low),
                     )
 
-    precip_types = []
-    integ_precip = 0
-    for d in forecast.hourly().data:
-        if d.time > datetime.now() + timedelta(days=1):
-            continue
-        integ_precip += d.precipProbability * d.precipIntensity
-        try:
-            if d.precipType not in precip_types:
-                precip_types.append(d.precipType)
-        except forecastio.utils.PropertyUnavailable:
-            pass
+        precip_types = []
+        integ_precip = 0
+        for d in forecast.hourly().data:
+            if d.time > datetime.now() + timedelta(days=1):
+                continue
+            integ_precip += d.precipProbability * d.precipIntensity
+            try:
+                if d.precipType not in precip_types:
+                    precip_types.append(d.precipType)
+            except forecastio.utils.PropertyUnavailable:
+                pass
 
-    if integ_precip > 0:
-        latertxt += u" H2O(l): %.2g mm as %s." % (integ_precip, ', '.join(precip_types))
+        if integ_precip > 0:
+            latertxt += u" H2O(l): %.2g mm as %s." % (integ_precip, ', '.join(precip_types))
 
     if test:
         print(u"Retrieved: %s" % forecast.http_headers.get('Date', None))
