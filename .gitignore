@@ -18,6 +18,9 @@
 overseer
 set_backlight
 
+# Other outputs
+*.plist
+
 # Python
 *.pyc
 *.pyo
