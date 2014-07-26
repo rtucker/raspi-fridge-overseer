@@ -38,7 +38,7 @@ int main()
 
     FILE *munin;
 
-    size_t forecast_now_len = 0, forecast_later_len = 0, outbuf_len = 0, txt_len = 0;
+    size_t outbuf_len = 0, txt_len = 0;
 
     // Initialize the display
     (void)uartInit();
@@ -67,24 +67,18 @@ int main()
             return 1;
         }
 
-        forecast_now_len = read_string(FORECAST_NOW, forecast_now, MAX_FORECAST_WIDTH);
-        forecast_later_len = read_string(FORECAST_LATER, forecast_later, MAX_FORECAST_WIDTH);
-
-        if (forecast_now_len == 0)
+        if (!read_string(FORECAST_NOW, forecast_now, MAX_FORECAST_WIDTH))
         {
             forecast_now = "No Cur Wx";
-            forecast_now_len = strlen(forecast_now);
         }
 
-        if (forecast_later_len == 0)
+        if (!read_string(FORECAST_LATER, forecast_later, MAX_FORECAST_WIDTH))
         {
             forecast_later = "No F'cast";
-            forecast_later_len = strlen(forecast_later);
         }
 
         // Output the current time to the display
-        outbuf = malloc(MAX_OUTBUF * sizeof(char));
-        outbuf_len = 0;
+        outbuf = malloc((DISPLAY_WIDTH+1) * sizeof(char));
         if (outbuf == NULL)
         {
             printf("# malloc for outbuf failed!\n");
@@ -95,11 +89,11 @@ int main()
         tmp = localtime(&t);
         if (tmp == NULL)
         {
-            snprintf(outbuf, MAX_OUTBUF, "Time: NULL");
+            snprintf(outbuf, DISPLAY_WIDTH+1, "Time: NULL");
         }
-        else if (strftime(outbuf, MAX_OUTBUF, "%a %b %d %H:%M", tmp) == 0)
+        else if (strftime(outbuf, DISPLAY_WIDTH+1, "%a %b %d %H:%M", tmp) == 0)
         {
-            snprintf(outbuf, MAX_OUTBUF, "Time: INVALID");
+            snprintf(outbuf, DISPLAY_WIDTH+1, "Time: INVALID");
         }
         lcdSetPosition(1,0);
         lcdWrite(outbuf);

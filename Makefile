@@ -1,6 +1,6 @@
 # vim: noet
 
-CC=gcc
+CC=clang
 CFLAGS=-c -Wall
 LDFLAGS=
 RM=rm -f
@@ -38,3 +38,6 @@ test_w1_gpio: iface_w1_gpio.o test_iface_w1_gpio.o
 
 clean_test_w1_gpio:
 	$(RM) test_iface_w1_gpio test_iface_w1_gpio.o
+
+analyze:
+	$(CC) --analyze $(OVERSEER_SOURCES) $(SET_BACKLIGHT_SOURCES)
