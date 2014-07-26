@@ -20,6 +20,7 @@ set_backlight
 
 # Other outputs
 *.plist
+*.d
 
 # Python
 *.pyc
