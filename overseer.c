@@ -21,7 +21,7 @@ size_t read_string(char const *filename, char *target, size_t len)
         return 0;
     }
 
-    return fread(target, 1, len, fp);
+    return fread(target, 1, len-1, fp);
 }
 
 int main()
