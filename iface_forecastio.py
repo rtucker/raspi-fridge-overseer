@@ -96,29 +96,31 @@ def main(test=False):
     if round(forecast.currently().temperature) != round(forecast.currently().apparentTemperature):
         nowtxt += u", feels like %d\xdf" % round(forecast.currently().apparentTemperature)
 
+    latertxt = u""
+
     if len(forecast.alerts()) > 0:
-        latertxt = u"***ALERT*** %s ***ALERT***" % '; '.join([f.title for f in forecast.alerts()])
-    else:
-        latertxt = u"Next 24h: %s High %d\xdf Low %d\xdf" % (
-                        forecast.hourly().summary,
-                        round(high),
-                        round(low),
-                    )
+        latertxt += u"***ALERT*** %s ... " % '; '.join([f.title for f in forecast.alerts()])
 
-        precip_types = []
-        integ_precip = 0
-        for d in forecast.hourly().data:
-            if d.time > datetime.now() + timedelta(days=1):
-                continue
-            integ_precip += d.precipProbability * d.precipIntensity
-            try:
-                if d.precipType not in precip_types:
-                    precip_types.append(d.precipType)
-            except forecastio.utils.PropertyUnavailable:
-                pass
+    latertxt += u"Next 24h: %s High %d\xdf Low %d\xdf" % (
+                    forecast.hourly().summary,
+                    round(high),
+                    round(low),
+                )
 
-        if integ_precip > 0:
-            latertxt += u" H2O(l): %.2g mm as %s." % (integ_precip, ', '.join(precip_types))
+    precip_types = []
+    integ_precip = 0
+    for d in forecast.hourly().data:
+        if d.time > datetime.now() + timedelta(days=1):
+            continue
+        integ_precip += d.precipProbability * d.precipIntensity
+        try:
+            if d.precipType not in precip_types:
+                precip_types.append(d.precipType)
+        except forecastio.utils.PropertyUnavailable:
+            pass
+
+    if integ_precip > 0.1:
+        latertxt += u" H2O(l): %.2g mm as %s." % (integ_precip, ', '.join(precip_types))
 
     if test:
         print(u"Retrieved: %s" % forecast.http_headers.get('Date', None))
