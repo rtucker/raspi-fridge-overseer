@@ -136,14 +136,15 @@ def main(test=False):
             print(u"      uri        : %s" % (a.uri))
 
     else:
-        with open(NOWFILE, 'wb') as fp:
-            # force latin_1 instead of ascii, so we can directly use chars
-            # above 128 without unicode crap
-            fp = codecs.getwriter('latin_1')(fp)
+        # emdashes?!
+        nowtxt = unicode(nowtxt).replace(u'\u2013', '-')
+        latertxt = unicode(latertxt).replace(u'\u2013', '-')
+        # force latin_1 instead of ascii, so we can directly use chars
+        # above 128 without unicode crap
+        with codecs.open(NOWFILE, 'wb', 'latin_1', 'replace') as fp:
             fp.write(unicode(nowtxt))
-        with open(LATERFILE, 'wb') as fp:
-            fp = codecs.getwriter('latin_1')(fp)
-            fp.write(latertxt)
+        with codecs.open(LATERFILE, 'wb', 'latin_1', 'replace') as fp:
+            fp.write(unicode(latertxt))
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'test':
