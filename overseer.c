@@ -13,6 +13,7 @@
 size_t read_string(char const *filename, char *target, size_t len)
 {
     FILE *fp = fopen(filename, "r");
+    size_t retval = 0;
 
     memset(target, '\0', len);
 
@@ -21,7 +22,9 @@ size_t read_string(char const *filename, char *target, size_t len)
         return 0;
     }
 
-    return fread(target, 1, len-1, fp);
+    retval = fread(target, 1, len-1, fp);
+    fclose(fp);
+    return retval;
 }
 
 int main()
@@ -47,23 +50,23 @@ int main()
     while(TRUE)
     {
         // Pull in sensor data
-        sensor_array = malloc(SENSOR_ARRAY_LENGTH * sizeof(sensor_t));
+        sensor_array = calloc(SENSOR_ARRAY_LENGTH, sizeof(sensor_t));
 
         if (sensor_array == NULL)
         {
             // woah nelly
-            printf("# malloc of sensor_array failed!\n");
+            printf("# calloc of sensor_array failed!\n");
             return 1;
         }
         actualsize = getSensorList(sensor_array);
 
         // Pull in forecast data
-        forecast_now = malloc(MAX_FORECAST_WIDTH * sizeof(char));
-        forecast_later = malloc(MAX_FORECAST_WIDTH * sizeof(char));
+        forecast_now = calloc(MAX_FORECAST_WIDTH, sizeof(char));
+        forecast_later = calloc(MAX_FORECAST_WIDTH, sizeof(char));
 
         if ((forecast_now == NULL) || (forecast_later == NULL)) 
         {
-            printf("# malloc for forecast data failed!\n");
+            printf("# calloc for forecast data failed!\n");
             return 1;
         }
 
@@ -78,10 +81,10 @@ int main()
         }
 
         // Output the current time to the display
-        outbuf = malloc((DISPLAY_WIDTH+1) * sizeof(char));
+        outbuf = calloc((DISPLAY_WIDTH+1), sizeof(char));
         if (outbuf == NULL)
         {
-            printf("# malloc for outbuf failed!\n");
+            printf("# calloc for outbuf failed!\n");
             return 1;
         }
 
@@ -116,11 +119,11 @@ int main()
         fclose(munin);
 
         // Process bottom row of display
-        outbuf = malloc(MAX_OUTBUF * sizeof(char));
+        outbuf = calloc(MAX_OUTBUF, sizeof(char));
         outbuf_len = 0;
         if (outbuf == NULL)
         {
-            printf("# malloc for outbuf failed!\n");
+            printf("# calloc for outbuf failed!\n");
             return 1;
         }
 
